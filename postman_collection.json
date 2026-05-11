@@ -1,0 +1,73 @@
+{
+  "info": {
+    "name": "Raízes do Nordeste - API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3333" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth - Login Cliente",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/auth/login",
+        "body": { "mode": "raw", "raw": "{\"email\":\"cliente@raizes.com\",\"senha\":\"Senha@123\"}" }
+      },
+      "event": [{
+        "listen": "test",
+        "script": { "exec": ["pm.collectionVariables.set('token', pm.response.json().accessToken);"] }
+      }]
+    },
+    {
+      "name": "Unidades - Cardápio (público)",
+      "request": { "method": "GET", "url": "{{baseUrl}}/unidades/1/cardapio" }
+    },
+    {
+      "name": "Pedidos - Criar (TOTEM)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": "{{baseUrl}}/pedidos",
+        "body": { "mode": "raw", "raw": "{\"canalPedido\":\"TOTEM\",\"unidadeId\":1,\"itens\":[{\"produtoId\":1,\"quantidade\":2}]}" }
+      }
+    },
+    {
+      "name": "Pedidos - Listar por canal",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{baseUrl}}/pedidos?canalPedido=TOTEM"
+      }
+    },
+    {
+      "name": "Pagamentos - Solicitar (mock)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": "{{baseUrl}}/pagamentos",
+        "body": { "mode": "raw", "raw": "{\"pedidoId\":1,\"metodo\":\"PIX\"}" }
+      }
+    },
+    {
+      "name": "Estoque - Movimento (negativo: sem permissão CLIENTE)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": "{{baseUrl}}/estoque/movimento",
+        "body": { "mode": "raw", "raw": "{\"unidadeId\":1,\"produtoId\":1,\"tipo\":\"ENTRADA\",\"quantidade\":5}" }
+      }
+    }
+  ]
+}

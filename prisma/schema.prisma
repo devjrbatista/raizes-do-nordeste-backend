@@ -1,0 +1,122 @@
+// Prisma schema - Rede Raízes do Nordeste
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ===== ENUMS (representados como String + validação no código, pois SQLite não tem ENUM nativo) =====
+// Role: CLIENTE | ATENDENTE | GERENTE | ADMIN
+// CanalPedido: APP | TOTEM | BALCAO | PICKUP | WEB
+// StatusPedido: RECEBIDO | EM_PREPARO | PRONTO | ENTREGUE | CANCELADO
+// StatusPagamento: PENDENTE | APROVADO | RECUSADO | ESTORNADO
+
+model Usuario {
+  id              Int       @id @default(autoincrement())
+  nome            String
+  email           String    @unique
+  senhaHash       String
+  role            String    @default("CLIENTE")
+  consenteLgpd    Boolean   @default(false)
+  consenteFidelidade Boolean @default(false)
+  pontosFidelidade Int      @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  pedidos         Pedido[]
+}
+
+model Unidade {
+  id        Int       @id @default(autoincrement())
+  nome      String
+  cidade    String
+  endereco  String
+  ativo     Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  estoques  Estoque[]
+  pedidos   Pedido[]
+}
+
+model Produto {
+  id          Int       @id @default(autoincrement())
+  nome        String
+  descricao   String?
+  preco       Float
+  categoria   String
+  ativo       Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  estoques    Estoque[]
+  itens       ItemPedido[]
+}
+
+model Estoque {
+  id         Int      @id @default(autoincrement())
+  unidadeId  Int
+  produtoId  Int
+  quantidade Int      @default(0)
+  unidade    Unidade  @relation(fields: [unidadeId], references: [id])
+  produto    Produto  @relation(fields: [produtoId], references: [id])
+  movimentos MovimentoEstoque[]
+  @@unique([unidadeId, produtoId])
+}
+
+model MovimentoEstoque {
+  id        Int      @id @default(autoincrement())
+  estoqueId Int
+  tipo      String   // ENTRADA | SAIDA
+  quantidade Int
+  motivo    String?
+  createdAt DateTime @default(now())
+  estoque   Estoque  @relation(fields: [estoqueId], references: [id])
+}
+
+model Pedido {
+  id            Int       @id @default(autoincrement())
+  clienteId     Int
+  unidadeId     Int
+  canalPedido   String    // APP | TOTEM | BALCAO | PICKUP | WEB
+  status        String    @default("RECEBIDO")
+  total         Float
+  pontosGanhos  Int       @default(0)
+  pontosUsados  Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  cliente       Usuario   @relation(fields: [clienteId], references: [id])
+  unidade       Unidade   @relation(fields: [unidadeId], references: [id])
+  itens         ItemPedido[]
+  pagamento     Pagamento?
+}
+
+model ItemPedido {
+  id            Int     @id @default(autoincrement())
+  pedidoId      Int
+  produtoId     Int
+  quantidade    Int
+  precoUnitario Float
+  pedido        Pedido  @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+  produto       Produto @relation(fields: [produtoId], references: [id])
+}
+
+model Pagamento {
+  id           Int      @id @default(autoincrement())
+  pedidoId     Int      @unique
+  metodo       String   // PIX | CARTAO | DINHEIRO
+  status       String   @default("PENDENTE")
+  valor        Float
+  transactionId String?
+  payloadGateway String? // JSON do gateway (mock)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  pedido       Pedido   @relation(fields: [pedidoId], references: [id])
+}
+
+model Promocao {
+  id          Int      @id @default(autoincrement())
+  nome        String
+  descricao   String
+  percentual  Float    // ex.: 10 = 10% desconto
+  ativo       Boolean  @default(true)
+  validoAte   DateTime?
+}
