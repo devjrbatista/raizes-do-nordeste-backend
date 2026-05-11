@@ -23,7 +23,7 @@ npm run setup       # cria o banco, aplica migrations e roda o seed
 npm run dev         # inicia em http://localhost:3333
 ```
 
-Acesse o Swagger em **http://localhost:3333/docs**.
+Acesse o Swagger em **http://localhost:3333/docs**
 
 ### Rodar os testes
 ```bash
