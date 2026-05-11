@@ -1,5 +1,7 @@
 # Raízes do Nordeste - API Back-End
 
+Link do repositório: https://github.com/devjrbatista/raizes-do-nordeste-backend.git
+
 Este projeto foi desenvolvido como parte do Projeto Multidisciplinar da UNINTER, com foco na trilha Back-End. A aplicação simula a API de uma rede de lanchonetes multicanal chamada “Raízes do Nordeste”, permitindo autenticação de usuários, gerenciamento de pedidos, controle de estoque, fidelidade e pagamentos mock.
 
 ## 🛠 Stack
